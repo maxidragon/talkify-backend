@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               Int       @id @default(autoincrement())
+  email            String    @unique
+  username         String
+  password         String
+  Theme            Theme     @default(light)
+  sentMessages     Message[] @relation("sentMessages")
+  receivedMessages Message[] @relation("receivedMessages")
+}
+
+model Message {
+  id         BigInt    @id @default(autoincrement())
+  content    String?
+  senderId   Int
+  receiverId Int
+  sendTime   DateTime  @default(now())
+  isRead     Boolean   @default(false)
+  readTime   DateTime?
+  sender     User      @relation("sentMessages", fields: [senderId], references: [id])
+  receiver   User      @relation("receivedMessages", fields: [receiverId], references: [id])
+}
+
+enum Theme {
+  light
+  dark
+}
