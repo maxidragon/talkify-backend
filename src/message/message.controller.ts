@@ -26,4 +26,23 @@ export class MessageController {
       dto.receiver,
     );
   }
+
+  @Get('unread/:receiverId')
+  async getNumberOfUnreadMessages(
+    @GetUser() user: JwtAuthDto,
+    @Param('receiverId') receiverId: number,
+  ) {
+    return await this.messageService.getNumberOfUnreadMessages(
+      user.userId,
+      receiverId,
+    );
+  }
+
+  @Get('markAsRead/:receiverId')
+  async markAsRead(
+    @GetUser() user: JwtAuthDto,
+    @Param('receiverId') receiverId: number,
+  ) {
+    return await this.messageService.markAsRead(user.userId, receiverId);
+  }
 }
