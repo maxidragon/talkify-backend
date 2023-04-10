@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { MessageService } from './message.service';
 import { JwtAuthDto } from '../auth/dto/jwt-auth.dto';
@@ -10,12 +18,15 @@ import { SendDto } from './dto/send.dto';
 export class MessageController {
   constructor(private messageService: MessageService) {}
 
-  @Get('conversation/:receiverId')
+  @Get('conversation/:conversationId')
   async getConversation(
-    @Param('receiverId') receiverId: number,
+    @Param('conversationId') conversationId: number,
     @GetUser() user: JwtAuthDto,
   ) {
-    return await this.messageService.getConversation(user.userId, receiverId);
+    return await this.messageService.getConversation(
+      user.userId,
+      conversationId,
+    );
   }
 
   @Post('send')
@@ -44,5 +55,13 @@ export class MessageController {
     @Param('receiverId') receiverId: number,
   ) {
     return await this.messageService.markAsRead(user.userId, receiverId);
+  }
+
+  @Delete('delete/:messageId')
+  async deleteMessage(
+    @GetUser() user: JwtAuthDto,
+    @Param('messageId') messageId: number,
+  ) {
+    return await this.messageService.deleteMessage(user.userId, messageId);
   }
 }
