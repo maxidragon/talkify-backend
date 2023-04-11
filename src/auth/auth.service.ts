@@ -4,7 +4,7 @@ import { RegisterDto } from './dto/register.dto';
 import { JwtAuthDto } from './dto/jwt-auth.dto';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
-import sha512 from 'crypto-js/sha512';
+import { sha512 } from 'js-sha512';
 
 @Injectable()
 export class AuthService {
@@ -56,8 +56,8 @@ export class AuthService {
   async generateAuthCookie(
     payload: JwtAuthDto,
   ): Promise<[string, string, object]> {
-    const jwt = await this.generateAuthJwt(payload);
-    return ['jwt', jwt, { secure: true }];
+    const jwt = await this.generateAuthJwt(payload as JwtAuthDto);
+    return ['jwt', jwt, { secure: false }];
   }
 
   async getUserPublicInfo(email: string): Promise<object | null> {

@@ -31,6 +31,7 @@ export class MessageController {
 
   @Get('conversations')
   async getUserConversations(@GetUser() user: JwtAuthDto) {
+    console.log(user);
     return await this.messageService.getUserConversations(user.userId);
   }
 
