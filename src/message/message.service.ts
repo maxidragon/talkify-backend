@@ -10,14 +10,14 @@ export class MessageService {
     public async sendMessage(
         content: string,
         senderId: number,
-        receiverId: number,
+        conversationId: number,
     ): Promise<string> {
         try {
             await this.prisma.message.create({
                 data: {
                     content: content,
                     senderId: senderId,
-                    receiverId: receiverId,
+                    conversationId: conversationId,
                 },
             });
             return 'Message sent';
@@ -27,58 +27,60 @@ export class MessageService {
         }
     }
 
-    public async getConversation(
-        senderId: number,
-        receiverId: number,
-    ): Promise<any> {
+    public async getConversation(userId: number, conversationId: number): Promise<any> {
         try {
-            return await this.prisma.message.findMany({
+            return await this.prisma.conversationsUsers.findMany({
                 where: {
-                    OR: [
-                        {
-                            senderId: senderId,
-                            receiverId: receiverId,
-                        },
-                        {
-                            senderId: receiverId,
-                            receiverId: senderId,
-                        },
-                    ],
+                    userId: userId,
+                    conversationId: conversationId,
                 },
-            });
+                select: {
+                    conversation: {
+                        select: {
+                            id: true,
+                            name: true,
+                            messages: {
+                                select: {
+                                    id: true,
+                                    content: true,
+                                    sendTime: true,
+                                    sender: {
+                                        select: {
+                                            id: true,
+                                            username: true,
+                                        }
+                                    }
+                                },
+                                orderBy: {
+                                    sendTime: 'asc'
+                                }
+                            }
+                        }
+
+                    }
+                }
+            })
         } catch (e) {
             console.log(e);
             return 'Error';
         }
     }
 
-    public async markAsRead(receiverId: number, senderId: number): Promise<any> {
+    public async getUserConversations(userId: number): Promise<any> {
         try {
-            return await this.prisma.message.updateMany({
+            return await this.prisma.conversationsUsers.findMany({
                 where: {
-                    senderId: senderId,
-                    receiverId: receiverId,
-                    isRead: false,
+                    userId: userId,
                 },
-                data: {
-                    isRead: true,
-                },
-            });
-        } catch (e) {
-            console.log(e);
-            return 'Error';
-        }
-    }
-
-    public async getNumberOfUnreadMessages(receiverId: number, senderId: number): Promise<any> {
-        try {
-            return await this.prisma.message.count({
-                where: {
-                    senderId: senderId,
-                    receiverId: receiverId,
-                    isRead: false,
-                },
-            });
+                select: {
+                    conversation: {
+                        select: {
+                            id: true,
+                            name: true,
+                        }
+                    }
+                }
+            })
         } catch (e) {
             console.log(e);
             return 'Error';

@@ -8,27 +8,42 @@ datasource db {
 }
 
 model User {
-  id           Int       @id @default(autoincrement())
-  email        String    @unique
-  username     String
-  password     String
-  Theme        Theme     @default(light)
-  sentMessages Message[] @relation("sentMessages")
+  id                 Int                  @id @default(autoincrement())
+  email              String               @unique
+  username           String
+  password           String
+  Theme              Theme                @default(light)
+  sentMessages       Message[]            @relation("sentMessages")
+  conversations      Conversation[]       @relation("usersInConversations")
+  conversationsUsers ConversationsUsers[]
 }
+
 model Conversation {
-  id       Int       @id @default(autoincrement())
-  messages Message[]
+  id                   Int                  @id @default(autoincrement())
+  name                 String?
+  messages             Message[]
+  usersInConversations ConversationsUsers[]
+  participants         User[]               @relation("usersInConversations")
 }
+
 model Message {
   id             BigInt       @id @default(autoincrement())
   content        String?
   senderId       Int
   conversationId Int
   sendTime       DateTime     @default(now())
-  isRead         Boolean      @default(false)
-  readTime       DateTime?
   sender         User         @relation("sentMessages", fields: [senderId], references: [id])
   conversation   Conversation @relation(fields: [conversationId], references: [id])
+}
+
+model ConversationsUsers {
+  id             Int          @id @default(autoincrement())
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
+  conversationId Int
+  userId         Int
+
+  @@unique([conversationId, userId])
 }
 
 enum Theme {
