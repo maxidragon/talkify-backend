@@ -29,6 +29,11 @@ export class MessageController {
     );
   }
 
+  @Get('conversations')
+  async getUserConversations(@GetUser() user: JwtAuthDto) {
+    return await this.messageService.getUserConversations(user.userId);
+  }
+
   @Post('send')
   async sendMessage(@Body() dto: SendDto, @GetUser() user: JwtAuthDto) {
     return await this.messageService.sendMessage(
