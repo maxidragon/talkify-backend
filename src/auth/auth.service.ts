@@ -57,7 +57,7 @@ export class AuthService {
     payload: JwtAuthDto,
   ): Promise<[string, string, object]> {
     const jwt = await this.generateAuthJwt(payload as JwtAuthDto);
-    return ['jwt', jwt, { secure: false }];
+    return ['jwt', jwt, { secure: false, sameSite: 'None' }];
   }
 
   async getUserPublicInfo(email: string): Promise<object | null> {

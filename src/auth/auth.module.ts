@@ -8,9 +8,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { LoginModule } from './login/login.module';
 
 const { SECRET: secret = 'secret' } = process.env;
+
 @Module({
   imports: [
     forwardRef(() => RegisterModule),
+    forwardRef(() => LoginModule),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       secret,
