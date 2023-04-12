@@ -20,13 +20,14 @@ export class MessageController {
 
   @Get('conversation/:conversationId')
   async getConversation(
-    @Param('conversationId') conversationId: number,
+    @Param('conversationId') conversationId: string,
     @GetUser() user: JwtAuthDto,
   ) {
-    return await this.messageService.getConversation(
+    const conversation = await this.messageService.getConversation(
       user.userId,
-      conversationId,
+      parseInt(conversationId),
     );
+    return this.convertBigIntToString(conversation);
   }
 
   @Get('conversations')
@@ -40,7 +41,7 @@ export class MessageController {
     return await this.messageService.sendMessage(
       dto.content,
       user.userId,
-      dto.receiver,
+      dto.conversation,
     );
   }
 
@@ -50,5 +51,18 @@ export class MessageController {
     @Param('messageId') messageId: number,
   ) {
     return await this.messageService.deleteMessage(user.userId, messageId);
+  }
+
+  convertBigIntToString(obj: any): any {
+    if (obj instanceof Object) {
+      for (const prop in obj) {
+        if (obj.hasOwnProperty(prop)) {
+          obj[prop] = this.convertBigIntToString(obj[prop]);
+        }
+      }
+    } else if (typeof obj === 'bigint') {
+      obj = obj.toString();
+    }
+    return obj;
   }
 }

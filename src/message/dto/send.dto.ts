@@ -3,7 +3,7 @@ import { IsInt, IsNotEmpty, IsString } from 'class-validator';
 export class SendDto {
   @IsInt()
   @IsNotEmpty()
-  receiver: number;
+  conversation: number;
 
   @IsString()
   @IsNotEmpty()
