@@ -101,4 +101,37 @@ export class MessageService {
       return 'Error';
     }
   }
+
+  public async getConversationMembers(
+    userId: number,
+    conversationId: number,
+  ): Promise<any> {
+    try {
+      const data = await this.prisma.conversationsUsers.findMany({
+        where: {
+          conversationId: conversationId,
+        },
+        select: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+            },
+          },
+        },
+      });
+      let isMember = false;
+      data.map((item: any) => {
+        if (item.user.id === userId) {
+          isMember = true;
+        }
+      });
+      if (isMember) {
+        return data;
+      }
+    } catch (e) {
+      console.log(e);
+      return 'Error';
+    }
+  }
 }
