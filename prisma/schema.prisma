@@ -8,14 +8,15 @@ datasource db {
 }
 
 model User {
-  id                 Int                  @id @default(autoincrement())
-  email              String               @unique
-  username           String
-  password           String
-  Theme              Theme                @default(light)
-  sentMessages       Message[]            @relation("sentMessages")
-  conversations      Conversation[]       @relation("usersInConversations")
-  conversationsUsers ConversationsUsers[]
+  id                   Int                  @id @default(autoincrement())
+  email                String               @unique
+  username             String
+  password             String
+  Theme                Theme                @default(light)
+  sentMessages         Message[]            @relation("sentMessages")
+  conversations        Conversation[]       @relation("usersInConversations")
+  addedToConversations ConversationsUsers[] @relation("addedBy")
+  conversationsUsers   ConversationsUsers[] @relation("usersInConversations")
 }
 
 model Conversation {
@@ -39,9 +40,14 @@ model Message {
 model ConversationsUsers {
   id             Int          @id @default(autoincrement())
   conversation   Conversation @relation(fields: [conversationId], references: [id])
-  user           User         @relation(fields: [userId], references: [id])
+  user           User         @relation(fields: [userId], references: [id], "usersInConversations")
   conversationId Int
   userId         Int
+  addedById      Int?
+  addedBy        User?        @relation(fields: [addedById], references: [id], "addedBy")
+  addedTime      DateTime?    @default(now())
+  isAccepted     Boolean      @default(false)
+  acceptedTime   DateTime?
 
   @@unique([conversationId, userId])
 }

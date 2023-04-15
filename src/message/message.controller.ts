@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
   Param,
   Post,
   UseGuards,
@@ -17,35 +16,6 @@ import { SendDto } from './dto/send.dto';
 @Controller('message')
 export class MessageController {
   constructor(private messageService: MessageService) {}
-
-  @Get('conversation/:conversationId')
-  async getConversation(
-    @Param('conversationId') conversationId: string,
-    @GetUser() user: JwtAuthDto,
-  ) {
-    const conversation = await this.messageService.getConversation(
-      user.userId,
-      parseInt(conversationId),
-    );
-    return this.convertBigIntToString(conversation);
-  }
-
-  @Get('conversations')
-  async getUserConversations(@GetUser() user: JwtAuthDto) {
-    console.log(user);
-    return await this.messageService.getUserConversations(user.userId);
-  }
-
-  @Get('conversation/:conversationId/members')
-  async getConversationMembers(
-    @GetUser() user: JwtAuthDto,
-    @Param('conversationId') conversationId: string,
-  ) {
-    return await this.messageService.getConversationMembers(
-      user.userId,
-      parseInt(conversationId),
-    );
-  }
 
   @Post('send')
   async sendMessage(@Body() dto: SendDto, @GetUser() user: JwtAuthDto) {
@@ -62,18 +32,5 @@ export class MessageController {
     @Param('messageId') messageId: number,
   ) {
     return await this.messageService.deleteMessage(user.userId, messageId);
-  }
-
-  convertBigIntToString(obj: any): any {
-    if (obj instanceof Object) {
-      for (const prop in obj) {
-        if (obj.hasOwnProperty(prop)) {
-          obj[prop] = this.convertBigIntToString(obj[prop]);
-        }
-      }
-    } else if (typeof obj === 'bigint') {
-      obj = obj.toString();
-    }
-    return obj;
   }
 }
