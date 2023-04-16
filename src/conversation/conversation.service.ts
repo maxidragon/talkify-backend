@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DbService } from '../db/db.service';
+import { AddUserDto } from './dto/addUser.dto';
 
 @Injectable()
 export class ConversationService {
@@ -39,8 +40,7 @@ export class ConversationService {
   }
 
   public async addConversationMember(
-    memberId: number,
-    conversationId: number,
+    body: AddUserDto,
     addedBy: number,
   ): Promise<any> {
     try {
@@ -52,12 +52,15 @@ export class ConversationService {
       if (!isInConversation) {
         return 'You are not in this conversation';
       }
-      return await this.prisma.conversationsUsers.create({
+      await this.prisma.conversationsUsers.create({
         data: {
-          userId: memberId,
-          conversationId: conversationId,
+          userId: body.userId,
+          conversationId: body.conversationId,
+          addedById: addedBy,
         },
       });
+
+      return 'User added';
     } catch (e) {
       console.log(e);
       return 'Error';

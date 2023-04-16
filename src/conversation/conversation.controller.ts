@@ -1,8 +1,9 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { GetUser } from '../auth/decorator/getUser.decorator';
 import { JwtAuthDto } from '../auth/dto/jwt-auth.dto';
 import { ConversationService } from './conversation.service';
 import { AuthGuard } from '@nestjs/passport';
+import { AddUserDto } from './dto/addUser.dto';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('conversation')
@@ -36,6 +37,15 @@ export class ConversationController {
       user.userId,
       parseInt(conversationId),
     );
+  }
+
+  @Post('add')
+  async addConversationMember(
+    @Body() body: AddUserDto,
+    @GetUser() user: JwtAuthDto,
+  ) {
+    await this.conversationService.addConversationMember(body, user.userId);
+    return { body, statusCode: 201 };
   }
 
   convertBigIntToString(obj: any): any {
