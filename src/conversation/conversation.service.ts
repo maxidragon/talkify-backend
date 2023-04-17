@@ -114,6 +114,7 @@ export class ConversationService {
       return await this.prisma.conversationsUsers.findMany({
         where: {
           userId: userId,
+          isAccepted: true,
         },
         select: {
           conversation: {
@@ -124,6 +125,22 @@ export class ConversationService {
           },
         },
       });
+    } catch (e) {
+      console.log(e);
+      return 'Error';
+    }
+  }
+
+  public async acceptInvitation(
+    conversationId: number,
+    userId: number,
+  ): Promise<any> {
+    try {
+      await this.prisma.conversationsUsers.updateMany({
+        where: { conversationId, userId },
+        data: { isAccepted: true, acceptedTime: new Date() },
+      });
+      return 'Invitation accepted';
     } catch (e) {
       console.log(e);
       return 'Error';

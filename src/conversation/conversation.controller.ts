@@ -44,8 +44,18 @@ export class ConversationController {
     @Body() body: AddUserDto,
     @GetUser() user: JwtAuthDto,
   ) {
+    console.log(body);
     await this.conversationService.addConversationMember(body, user.userId);
     return { body, statusCode: 201 };
+  }
+
+  @Get('accept')
+  async acceptInvitation(conversationId: number, @GetUser() user: JwtAuthDto) {
+    await this.conversationService.acceptInvitation(
+      conversationId,
+      user.userId,
+    );
+    return { statusCode: 201 };
   }
 
   convertBigIntToString(obj: any): any {
