@@ -9,20 +9,22 @@ import {
 import { AuthService } from '../auth.service';
 import { LoginDto } from '../dto/login.dto';
 import { Response } from 'express';
+import { ChatService } from '../../chat/chat.service';
 
 @Controller('auth/login')
 export class LoginController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly chatService: ChatService,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.OK)
   async login(@Body() dto: LoginDto, @Res() res: Response) {
     const jwt = await this.authService.login(dto);
     res.cookie(...jwt);
-    res.cookie(
-      'user_info',
-      JSON.stringify(await this.authService.getUserPublicInfo(dto.email)),
-    );
+    const info = await this.authService.getUserPublicInfo(dto.email);
+    res.cookie('user_info', JSON.stringify(info));
     res.send({ token: jwt[1] });
   }
 }
