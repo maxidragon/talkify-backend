@@ -1,10 +1,9 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { LoginController } from './login.controller';
 import { AuthModule } from '../auth.module';
-import { WebsocketModule } from '../../chat/chat.module';
 
 @Module({
-  imports: [forwardRef(() => AuthModule), WebsocketModule],
+  imports: [forwardRef(() => AuthModule)],
   controllers: [LoginController],
 })
 export class LoginModule {}

@@ -4,6 +4,7 @@ import { JwtAuthDto } from '../auth/dto/jwt-auth.dto';
 import { ConversationService } from './conversation.service';
 import { AuthGuard } from '@nestjs/passport';
 import { AddUserDto } from './dto/addUser.dto';
+import { CreateConversationDto } from './dto/createConversation.dto';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('conversation')
@@ -55,6 +56,15 @@ export class ConversationController {
       conversationId,
       user.userId,
     );
+    return { statusCode: 201 };
+  }
+
+  @Post('create')
+  async createConversation(
+    @Body() body: CreateConversationDto,
+    @GetUser() user: JwtAuthDto,
+  ) {
+    await this.conversationService.createConversation(user.userId, body.name);
     return { statusCode: 201 };
   }
 

@@ -9,14 +9,10 @@ import {
 import { AuthService } from '../auth.service';
 import { LoginDto } from '../dto/login.dto';
 import { Response } from 'express';
-import { ChatService } from '../../chat/chat.service';
 
 @Controller('auth/login')
 export class LoginController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly chatService: ChatService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Post()
   @HttpCode(HttpStatus.OK)

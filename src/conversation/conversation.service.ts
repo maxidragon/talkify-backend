@@ -146,4 +146,27 @@ export class ConversationService {
       return 'Error';
     }
   }
+
+  public async createConversation(createdBy: number, name: string) {
+    try {
+      const conversation = await this.prisma.conversation.create({
+        data: {
+          name: name,
+        },
+      });
+      await this.prisma.conversationsUsers.create({
+        data: {
+          userId: createdBy,
+          conversationId: conversation.id,
+          isAccepted: true,
+          acceptedTime: new Date(),
+          addedById: createdBy,
+        },
+      });
+      return conversation;
+    } catch (e) {
+      console.log(e);
+      return 'Error';
+    }
+  }
 }
