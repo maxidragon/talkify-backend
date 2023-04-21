@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { GetUser } from '../auth/decorator/getUser.decorator';
 import { JwtAuthDto } from '../auth/dto/jwt-auth.dto';
 import { ConversationService } from './conversation.service';
@@ -14,11 +22,15 @@ export class ConversationController {
   @Get(':conversationId')
   async getConversation(
     @Param('conversationId') conversationId: string,
+    @Query('skip') skip = '0',
+    @Query('take') take = '10',
     @GetUser() user: JwtAuthDto,
   ) {
     const conversation = await this.conversationService.getConversation(
       user.userId,
       parseInt(conversationId),
+      parseInt(skip),
+      parseInt(take),
     );
     return this.convertBigIntToString(conversation);
   }

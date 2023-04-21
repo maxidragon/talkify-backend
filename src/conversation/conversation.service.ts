@@ -70,6 +70,8 @@ export class ConversationService {
   public async getConversation(
     userId: number,
     conversationId: number,
+    skip: number,
+    take: number,
   ): Promise<any> {
     try {
       const result = await this.prisma.conversationsUsers.findMany({
@@ -83,6 +85,8 @@ export class ConversationService {
               id: true,
               name: true,
               messages: {
+                skip: skip,
+                take: take,
                 select: {
                   id: true,
                   content: true,
@@ -95,12 +99,15 @@ export class ConversationService {
                   },
                 },
                 orderBy: {
-                  sendTime: 'asc',
+                  sendTime: 'desc',
                 },
               },
             },
           },
         },
+      });
+      result[0].conversation.messages.sort(function (a, b) {
+        return a.sendTime.getTime() - b.sendTime.getTime();
       });
       return result[0].conversation;
     } catch (e) {
