@@ -38,4 +38,20 @@ export class MessageService {
       return 'Error';
     }
   }
+
+  public async editMessage(
+    senderId: number,
+    messageId: number,
+    content: string,
+  ): Promise<any> {
+    try {
+      await this.prisma.message.updateMany({
+        where: { id: messageId, senderId: senderId },
+        data: { content: content },
+      });
+    } catch (e) {
+      console.log(e);
+      return 'Error';
+    }
+  }
 }
