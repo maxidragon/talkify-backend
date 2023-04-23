@@ -27,4 +27,38 @@ export class UserService {
       return 'Error';
     }
   }
+
+  public async getSettings(userId: number): Promise<any> {
+    try {
+      return await this.prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+        select: {
+          username: true,
+          email: true,
+        },
+      });
+    } catch (e) {
+      console.log(e);
+      return 'Error';
+    }
+  }
+
+  public async updateSettings(userId: number, settings: any): Promise<any> {
+    try {
+      return await this.prisma.user.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          username: settings.username,
+          email: settings.email,
+        },
+      });
+    } catch (e) {
+      console.log(e);
+      return 'Error';
+    }
+  }
 }
