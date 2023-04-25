@@ -76,6 +76,7 @@ export class ConversationController {
     @Body() body: CreateConversationDto,
     @GetUser() user: JwtAuthDto,
   ) {
+    console.log(body);
     await this.conversationService.createConversation(user.userId, body.name);
     return { statusCode: 201 };
   }

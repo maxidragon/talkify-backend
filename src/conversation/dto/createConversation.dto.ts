@@ -1,7 +1,7 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsString, Length } from 'class-validator';
 
 export class CreateConversationDto {
   @IsString()
-  @IsNotEmpty()
+  @Length(1, 255)
   name: string;
 }
