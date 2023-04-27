@@ -54,4 +54,30 @@ export class MessageService {
       return 'Error';
     }
   }
+
+  public async searchMessages(
+    userId: number,
+    conversationId: number,
+    content: string,
+  ): Promise<any> {
+    if (await this.isInConversation(conversationId, userId)) {
+      return this.prisma.message.findMany({
+        where: {
+          conversationId: conversationId,
+          content: {
+            contains: content,
+          },
+        },
+      });
+    }
+  }
+  public async isInConversation(
+    userId: number,
+    conversationId: number,
+  ): Promise<boolean> {
+    const conversationUser = await this.prisma.conversationsUsers.findMany({
+      where: { conversationId: conversationId, userId: userId },
+    });
+    return conversationUser.length > 0;
+  }
 }

@@ -2,9 +2,11 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -43,5 +45,18 @@ export class MessageController {
     @Param('messageId') messageId: string,
   ) {
     return await this.messageService.deleteMessage(user.userId, +messageId);
+  }
+
+  @Get('search/:conversationId')
+  async searchMessages(
+    @GetUser() user: JwtAuthDto,
+    @Param('conversationId') conversationId: string,
+    @Query('content') content: string,
+  ) {
+    return await this.messageService.searchMessages(
+      user.userId,
+      +conversationId,
+      content,
+    );
   }
 }
