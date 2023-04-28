@@ -30,11 +30,15 @@ export class MessageController {
     );
   }
 
-  @Put('edit/')
-  async editMessage(@GetUser() user: JwtAuthDto, @Body() dto: EditDto) {
+  @Put(':messageId')
+  async editMessage(
+    @GetUser() user: JwtAuthDto,
+    @Body() dto: EditDto,
+    @Param('messageId') messageId: string,
+  ) {
     return await this.messageService.editMessage(
       user.userId,
-      dto.message,
+      +messageId,
       dto.content,
     );
   }

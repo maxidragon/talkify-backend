@@ -91,6 +91,7 @@ export class ConversationService {
                   id: true,
                   content: true,
                   sendTime: true,
+                  isEdited: true,
                   sender: {
                     select: {
                       id: true,

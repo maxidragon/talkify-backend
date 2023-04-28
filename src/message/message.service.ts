@@ -47,7 +47,7 @@ export class MessageService {
     try {
       await this.prisma.message.updateMany({
         where: { id: messageId, senderId: senderId },
-        data: { content: content },
+        data: { content: content, isEdited: true },
       });
     } catch (e) {
       console.log(e);
