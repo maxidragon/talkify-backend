@@ -180,4 +180,21 @@ export class ConversationService {
       return 'Error';
     }
   }
+  public async removeUserFromConversation(
+    userId: number,
+    conversationId: number,
+  ): Promise<any> {
+    try {
+      await this.prisma.conversationsUsers.deleteMany({
+        where: {
+          userId: userId,
+          conversationId: conversationId,
+        },
+      });
+      return 'User removed';
+    } catch (e) {
+      console.log(e);
+      return 'Error';
+    }
+  }
 }

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -62,13 +63,27 @@ export class ConversationController {
     return { body, statusCode: 201 };
   }
 
-  @Get('accept')
-  async acceptInvitation(conversationId: number, @GetUser() user: JwtAuthDto) {
+  @Get('accept/:conversationId')
+  async acceptInvitation(
+    @Param('conversationId') conversationId: string,
+    @GetUser() user: JwtAuthDto,
+  ) {
     await this.conversationService.acceptInvitation(
-      conversationId,
+      +conversationId,
       user.userId,
     );
     return { statusCode: 201 };
+  }
+  @Delete('leave/:conversationId')
+  async leaveConversation(
+    @GetUser() user: JwtAuthDto,
+    @Param('conversationId') conversationId: string,
+  ) {
+    await this.conversationService.removeUserFromConversation(
+      user.userId,
+      parseInt(conversationId),
+    );
+    return { statusCode: 204 };
   }
 
   @Post('create')
@@ -76,7 +91,6 @@ export class ConversationController {
     @Body() body: CreateConversationDto,
     @GetUser() user: JwtAuthDto,
   ) {
-    console.log(body);
     await this.conversationService.createConversation(user.userId, body.name);
     return { statusCode: 201 };
   }
