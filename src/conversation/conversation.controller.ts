@@ -27,6 +27,9 @@ export class ConversationController {
     @Query('take') take = '10',
     @GetUser() user: JwtAuthDto,
   ) {
+    if (isNaN(+conversationId)) {
+      return [];
+    }
     const conversation = await this.conversationService.getConversation(
       user.userId,
       parseInt(conversationId),
@@ -73,6 +76,15 @@ export class ConversationController {
       user.userId,
     );
     return { statusCode: 201 };
+  }
+  @Get('invitations')
+  async getInvitations(@GetUser() user: JwtAuthDto) {
+    console.log(user.userId);
+    return this.conversationService.getUserInvitations(user.userId);
+  }
+  @Get('invitations/number')
+  async getNumberOfInvitations(@GetUser() user: JwtAuthDto) {
+    return this.conversationService.getNumberOfInvitations(user.userId);
   }
   @Delete('leave/:conversationId')
   async leaveConversation(

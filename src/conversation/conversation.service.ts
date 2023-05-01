@@ -158,6 +158,41 @@ export class ConversationService {
     }
   }
 
+  public async getUserInvitations(userId: number) {
+    try {
+      return await this.prisma.conversationsUsers.findMany({
+        where: {
+          userId: userId,
+          isAccepted: false,
+        },
+        select: {
+          conversation: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
+    } catch (e) {
+      console.log(e);
+      return 'Error';
+    }
+  }
+  public async getNumberOfInvitations(userId: number): Promise<any> {
+    try {
+      const result = await this.prisma.conversationsUsers.findMany({
+        where: {
+          userId: userId,
+          isAccepted: false,
+        },
+      });
+      return result.length;
+    } catch (e) {
+      console.log(e);
+      return 'Error';
+    }
+  }
   public async createConversation(createdBy: number, name: string) {
     try {
       const conversation = await this.prisma.conversation.create({
@@ -180,6 +215,7 @@ export class ConversationService {
       return 'Error';
     }
   }
+
   public async removeUserFromConversation(
     userId: number,
     conversationId: number,
