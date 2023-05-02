@@ -20,7 +20,7 @@ import { CreateConversationDto } from './dto/createConversation.dto';
 export class ConversationController {
   constructor(private conversationService: ConversationService) {}
 
-  @Get(':conversationId')
+  @Get('messages/:conversationId')
   async getConversation(
     @Param('conversationId') conversationId: string,
     @Query('skip') skip = '0',
@@ -66,7 +66,7 @@ export class ConversationController {
     return { body, statusCode: 201 };
   }
 
-  @Get('accept/:conversationId')
+  @Get('invitations/:conversationId/accept')
   async acceptInvitation(
     @Param('conversationId') conversationId: string,
     @GetUser() user: JwtAuthDto,
@@ -77,15 +77,30 @@ export class ConversationController {
     );
     return { statusCode: 201 };
   }
+
   @Get('invitations')
   async getInvitations(@GetUser() user: JwtAuthDto) {
     console.log(user.userId);
     return this.conversationService.getUserInvitations(user.userId);
   }
+
   @Get('invitations/number')
   async getNumberOfInvitations(@GetUser() user: JwtAuthDto) {
     return this.conversationService.getNumberOfInvitations(user.userId);
   }
+
+  @Delete('invitations/:conversationId/decline')
+  async declineInvitation(
+    @GetUser() user: JwtAuthDto,
+    @Param('conversationId') conversationId: string,
+  ) {
+    await this.conversationService.declineInvitation(
+      +conversationId,
+      user.userId,
+    );
+    return { statusCode: 204 };
+  }
+
   @Delete('leave/:conversationId')
   async leaveConversation(
     @GetUser() user: JwtAuthDto,

@@ -157,6 +157,20 @@ export class ConversationService {
       return 'Error';
     }
   }
+  public async declineInvitation(
+    conversationId: number,
+    userId: number,
+  ): Promise<any> {
+    try {
+      await this.prisma.conversationsUsers.deleteMany({
+        where: { conversationId, userId },
+      });
+      return 'Invitation declined';
+    } catch (e) {
+      console.log(e);
+      return 'Error';
+    }
+  }
 
   public async getUserInvitations(userId: number) {
     try {
