@@ -17,6 +17,11 @@ export class ConversationService {
         },
         select: {
           isAdmin: true,
+          addedBy: {
+            select: {
+              username: true,
+            },
+          },
           user: {
             select: {
               id: true,
@@ -185,6 +190,11 @@ export class ConversationService {
           isAccepted: false,
         },
         select: {
+          addedBy: {
+            select: {
+              username: true,
+            },
+          },
           conversation: {
             select: {
               id: true,
