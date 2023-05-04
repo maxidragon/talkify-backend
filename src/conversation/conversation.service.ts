@@ -16,6 +16,7 @@ export class ConversationService {
           conversationId: conversationId,
         },
         select: {
+          isAdmin: true,
           user: {
             select: {
               id: true,
@@ -80,6 +81,7 @@ export class ConversationService {
           conversationId: conversationId,
         },
         select: {
+          isAdmin: true,
           conversation: {
             select: {
               id: true,
@@ -113,7 +115,10 @@ export class ConversationService {
       result[0].conversation.messages.map((item: any) => {
         item.isOwned = item.sender.id === userId;
       });
-      return result[0].conversation;
+      return {
+        ...result[0].conversation,
+        isAdmin: result[0].isAdmin,
+      };
     } catch (e) {
       console.log(e);
       return 'Error';
@@ -233,8 +238,12 @@ export class ConversationService {
   public async removeUserFromConversation(
     userId: number,
     conversationId: number,
+    deletedBy: number,
   ): Promise<any> {
     try {
+      if (!(await this.isAdmin(deletedBy, conversationId))) {
+        return 'You are not admin';
+      }
       await this.prisma.conversationsUsers.deleteMany({
         where: {
           userId: userId,
@@ -246,5 +255,64 @@ export class ConversationService {
       console.log(e);
       return 'Error';
     }
+  }
+  public async addAdmin(
+    userId: number,
+    conversationId: number,
+    addedBy: number,
+  ) {
+    if (!(await this.isAdmin(addedBy, conversationId))) {
+      return 'You are not admin';
+    }
+    try {
+      await this.prisma.conversationsUsers.updateMany({
+        where: {
+          userId: userId,
+          conversationId: conversationId,
+        },
+        data: {
+          isAdmin: true,
+        },
+      });
+      return 'Admin added';
+    } catch (e) {
+      console.log(e);
+      return 'Error';
+    }
+  }
+  public async removeAdmin(
+    userId: number,
+    conversationId: number,
+    deletedBy: number,
+  ) {
+    if (!(await this.isAdmin(deletedBy, conversationId))) {
+      return 'You are not admin';
+    }
+    try {
+      await this.prisma.conversationsUsers.updateMany({
+        where: {
+          userId: userId,
+          conversationId: conversationId,
+        },
+        data: {
+          isAdmin: false,
+        },
+      });
+      return 'Admin removed';
+    } catch (e) {
+      console.log(e);
+      return 'Error';
+    }
+  }
+
+  private async isAdmin(userId: number, conversationId: number) {
+    const user = await this.prisma.conversationsUsers.findMany({
+      where: {
+        userId: userId,
+        conversationId: conversationId,
+        isAdmin: true,
+      },
+    });
+    return user.length > 0;
   }
 }

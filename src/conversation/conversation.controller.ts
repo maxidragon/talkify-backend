@@ -109,8 +109,21 @@ export class ConversationController {
     await this.conversationService.removeUserFromConversation(
       user.userId,
       parseInt(conversationId),
+      user.userId,
     );
     return { statusCode: 204 };
+  }
+  @Delete('remove')
+  async removeUserFromConversation(
+    @GetUser() user: JwtAuthDto,
+    @Query('userId') userId: string,
+    @Query('conversationId') conversationId: string,
+  ) {
+    await this.conversationService.removeUserFromConversation(
+      parseInt(userId),
+      parseInt(conversationId),
+      user.userId,
+    );
   }
 
   @Post('create')
@@ -120,6 +133,30 @@ export class ConversationController {
   ) {
     await this.conversationService.createConversation(user.userId, body.name);
     return { statusCode: 201 };
+  }
+  @Post('admin')
+  async addAdmin(
+    @Body() body: AddUserDto,
+    @GetUser() user: JwtAuthDto,
+  ): Promise<any> {
+    await this.conversationService.addAdmin(
+      body.userId,
+      body.conversationId,
+      user.userId,
+    );
+    return { statusCode: 201 };
+  }
+  @Delete('admin')
+  async removeAdmin(
+    @GetUser() user: JwtAuthDto,
+    @Query('userId') userId: string,
+    @Query('conversationId') conversationId: string,
+  ) {
+    await this.conversationService.removeAdmin(
+      parseInt(userId),
+      parseInt(conversationId),
+      user.userId,
+    );
   }
 
   convertBigIntToString(obj: any): any {

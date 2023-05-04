@@ -50,6 +50,8 @@ model ConversationsUsers {
   addedTime      DateTime?    @default(now())
   isAccepted     Boolean      @default(false)
   acceptedTime   DateTime?
+  isAdmin        Boolean      @default(false)
+  username       String?
 
   @@unique([conversationId, userId])
 }
