@@ -23,4 +23,8 @@ export class UserController {
   async updateSettings(@GetUser() user: JwtAuthDto, @Body() settings: any) {
     return await this.userService.updateSettings(user.userId, settings);
   }
+  @Put('theme/:id')
+  async updateTheme(@GetUser() user: JwtAuthDto, @Param('id') theme: any) {
+    return await this.userService.updateTheme(user.userId, theme);
+  }
 }

@@ -61,4 +61,19 @@ export class UserService {
       return 'Error';
     }
   }
+  public async updateTheme(userId: number, theme: any): Promise<any> {
+    try {
+      return await this.prisma.user.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          Theme: theme,
+        },
+      });
+    } catch (e) {
+      console.log(e);
+      return 'Error';
+    }
+  }
 }
