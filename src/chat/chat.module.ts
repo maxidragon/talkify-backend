@@ -7,4 +7,4 @@ import { ChatController } from './chat.controller';
   providers: [ChatGateway, ChatService],
   controllers: [ChatController],
 })
-export class WebsocketModule {}
+export class ChatModule {}

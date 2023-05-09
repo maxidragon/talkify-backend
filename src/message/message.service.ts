@@ -9,16 +9,15 @@ export class MessageService {
     content: string,
     senderId: number,
     conversationId: number,
-  ): Promise<string> {
+  ): Promise<any> {
     try {
-      await this.prisma.message.create({
+      return await this.prisma.message.create({
         data: {
           content: content,
           senderId: senderId,
           conversationId: conversationId,
         },
       });
-      return 'Message sent';
     } catch (e) {
       console.log(e);
       return 'Error';

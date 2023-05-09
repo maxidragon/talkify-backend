@@ -1,38 +1,53 @@
 import {
+  OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Server } from 'socket.io';
-import { ChatService } from './chat.service';
+import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway()
-export class ChatGateway {
-  @WebSocketServer() server: Server;
+@WebSocketGateway({
+  cors: {
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: [
+      'X-Requested-With,Content-Type',
+      'Access-Control-Allow-Origin',
+      'Access-Control-Allow-Credentials',
+      'Origin',
+    ],
+    credentials: true,
+  },
+})
+export class ChatGateway implements OnGatewayDisconnect {
+  @WebSocketServer()
+  server: Server;
 
-  constructor(private readonly chatService: ChatService) {}
-
-  handleConnection(client: any, ...args: any[]) {
-    console.log(`Client connected: ${client.id}`);
+  async handleDisconnect(client: Socket) {
+    this.server.emit('users-changed', { user: client.id, event: 'left' });
+  }
+  @SubscribeMessage('enterConversation')
+  async enterChatRoom(client: Socket, roomId: string) {
+    client.join(roomId);
+    client.broadcast
+      .to(roomId)
+      .emit('users-changed', { user: client.id, event: 'joined' });
+    console.log('user joined', client.id, roomId);
   }
 
-  handleDisconnect(client: any) {
-    console.log(`Client disconnected: ${client.id}`);
-    this.chatService.removeOnlineUser(client.id);
-    this.server.emit('online-users', this.chatService.getOnlineUsers());
+  @SubscribeMessage('leaveConversation')
+  async leaveChatRoom(client: Socket, roomId: string) {
+    client.broadcast
+      .to(roomId)
+      .emit('users-changed', { user: client.id, event: 'left' });
+    client.leave(roomId);
   }
 
-  @SubscribeMessage('join')
-  handleJoin(client: any, userId: string) {
-    console.log(`User ${userId} joined the chat`);
-    this.chatService.addOnlineUser(userId);
-    this.server.emit('online-users', this.chatService.getOnlineUsers());
-  }
-
-  @SubscribeMessage('leave')
-  handleLeave(client: any, userId: string) {
-    console.log(`User ${userId} left the chat`);
-    this.chatService.removeOnlineUser(userId);
-    this.server.emit('online-users', this.chatService.getOnlineUsers());
+  @SubscribeMessage('message')
+  handleMessage(payload: { conversationId: number; message: any }): void {
+    const { conversationId, message } = payload;
+    this.server
+      .in(conversationId as unknown as string)
+      .emit('message', message);
   }
 }
