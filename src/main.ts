@@ -3,8 +3,34 @@ import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
 import * as dotenv from 'dotenv';
 import { ValidationPipe } from '@nestjs/common';
+import { IoAdapter } from '@nestjs/platform-socket.io';
+import { ServerOptions } from 'socket.io';
 
 dotenv.config();
+
+export class SocketAdapter extends IoAdapter {
+  createIOServer(
+    port: number,
+    options?: ServerOptions & {
+      namespace?: string;
+      server?: any;
+    },
+  ) {
+    return super.createIOServer(port, {
+      ...options,
+      cors: {
+        origin: true,
+        methods: ['GET', 'POST'],
+        allowedHeaders: [
+          'X-Requested-With,Content-Type',
+          'Access-Control-Allow-Origin',
+          'Access-Control-Allow-Credentials',
+          'Origin',
+        ],
+      },
+    });
+  }
+}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

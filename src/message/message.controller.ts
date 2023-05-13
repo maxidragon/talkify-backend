@@ -33,10 +33,7 @@ export class MessageController {
       user.userId,
       dto.conversation,
     );
-    const usersIds = [];
-    users.map((user) => {
-      usersIds.push(user.user.id);
-    });
+    const sender = users.find((u) => u.user.id === user.userId);
     const result = await this.messageService.sendMessage(
       dto.content,
       user.userId,
@@ -44,15 +41,16 @@ export class MessageController {
     );
     this.chatGateway.handleMessage({
       conversationId: dto.conversation,
-      message: {
+      message: this.convertBigIntToString({
         id: result.id,
         content: result.content,
-        sendTime: result.createdAt,
+        sendTime: result.sendTime,
         isEdited: result.isEdited,
         sender: {
           id: user.userId,
+          username: sender.user.username,
         },
-      },
+      }),
     });
   }
 
@@ -88,5 +86,18 @@ export class MessageController {
       +conversationId,
       content,
     );
+  }
+
+  convertBigIntToString(obj: any): any {
+    if (obj instanceof Object) {
+      for (const prop in obj) {
+        if (obj.hasOwnProperty(prop)) {
+          obj[prop] = this.convertBigIntToString(obj[prop]);
+        }
+      }
+    } else if (typeof obj === 'bigint') {
+      obj = obj.toString();
+    }
+    return obj;
   }
 }

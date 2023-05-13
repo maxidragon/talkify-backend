@@ -1,53 +1,36 @@
 import {
-  OnGatewayDisconnect,
+  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { Logger } from '@nestjs/common';
 
 @WebSocketGateway({
+  namespace: '/chat',
   cors: {
-    origin: 'http://localhost:3000',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    allowedHeaders: [
-      'X-Requested-With,Content-Type',
-      'Access-Control-Allow-Origin',
-      'Access-Control-Allow-Credentials',
-      'Origin',
-    ],
-    credentials: true,
+    origin: '*',
   },
 })
-export class ChatGateway implements OnGatewayDisconnect {
-  @WebSocketServer()
-  server: Server;
+export class ChatGateway implements OnGatewayInit {
+  @WebSocketServer() wss: Server;
 
-  async handleDisconnect(client: Socket) {
-    this.server.emit('users-changed', { user: client.id, event: 'left' });
+  private logger: Logger = new Logger('ChatGateway');
+
+  afterInit(server: any) {
+    this.logger.log('Initialized!');
   }
+
   @SubscribeMessage('enterConversation')
-  async enterChatRoom(client: Socket, roomId: string) {
-    client.join(roomId);
-    client.broadcast
-      .to(roomId)
-      .emit('users-changed', { user: client.id, event: 'joined' });
-    console.log('user joined', client.id, roomId);
+  handleRoomJoin(client: Socket, room: string) {
+    client.join(room);
+    client.emit('enteredConversation', room);
   }
 
-  @SubscribeMessage('leaveConversation')
-  async leaveChatRoom(client: Socket, roomId: string) {
-    client.broadcast
-      .to(roomId)
-      .emit('users-changed', { user: client.id, event: 'left' });
-    client.leave(roomId);
-  }
-
-  @SubscribeMessage('message')
   handleMessage(payload: { conversationId: number; message: any }): void {
     const { conversationId, message } = payload;
-    this.server
-      .in(conversationId as unknown as string)
-      .emit('message', message);
+    const roomId = conversationId.toString();
+    this.wss.to(roomId.toString()).emit('message', message);
   }
 }
