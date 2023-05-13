@@ -52,6 +52,7 @@ model ConversationsUsers {
   acceptedTime   DateTime?
   isAdmin        Boolean      @default(false)
   username       String?
+  readTime       DateTime?
 
   @@unique([conversationId, userId])
 }

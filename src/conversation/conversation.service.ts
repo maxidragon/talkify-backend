@@ -132,7 +132,7 @@ export class ConversationService {
 
   public async getUserConversations(userId: number): Promise<any> {
     try {
-      return await this.prisma.conversationsUsers.findMany({
+      const conversations = await this.prisma.conversationsUsers.findMany({
         where: {
           userId: userId,
           isAccepted: true,
@@ -146,6 +146,18 @@ export class ConversationService {
           },
         },
       });
+      const promises = conversations.map(async (conversation: any) => {
+        conversation.conversation.numberOfUnreadMessages =
+          await this.getNumberOfUnreadMessages(
+            userId,
+            conversation.conversation.id,
+          );
+        return conversation;
+      });
+
+      const conversationsWithUnreadMessages = await Promise.all(promises);
+      console.log(conversationsWithUnreadMessages);
+      return conversationsWithUnreadMessages;
     } catch (e) {
       console.log(e);
       return 'Error';
@@ -167,6 +179,7 @@ export class ConversationService {
       return 'Error';
     }
   }
+
   public async declineInvitation(
     conversationId: number,
     userId: number,
@@ -208,6 +221,7 @@ export class ConversationService {
       return 'Error';
     }
   }
+
   public async getNumberOfInvitations(userId: number): Promise<any> {
     try {
       const result = await this.prisma.conversationsUsers.findMany({
@@ -222,6 +236,7 @@ export class ConversationService {
       return 'Error';
     }
   }
+
   public async createConversation(createdBy: number, name: string) {
     try {
       const conversation = await this.prisma.conversation.create({
@@ -266,6 +281,7 @@ export class ConversationService {
       return 'Error';
     }
   }
+
   public async addAdmin(
     userId: number,
     conversationId: number,
@@ -290,6 +306,7 @@ export class ConversationService {
       return 'Error';
     }
   }
+
   public async removeAdmin(
     userId: number,
     conversationId: number,
@@ -309,6 +326,60 @@ export class ConversationService {
         },
       });
       return 'Admin removed';
+    } catch (e) {
+      console.log(e);
+      return 'Error';
+    }
+  }
+
+  public async getNumberOfUnreadMessages(
+    userId: number,
+    conversationId: number,
+  ) {
+    try {
+      const user = await this.prisma.conversationsUsers.findMany({
+        where: {
+          userId: userId,
+          conversationId: conversationId,
+        },
+        select: {
+          readTime: true,
+        },
+      });
+      if (user.length > 0) {
+        try {
+          const messages = await this.prisma.message.findMany({
+            where: {
+              conversationId: conversationId,
+              sendTime: {
+                gt: user[0].readTime,
+              },
+            },
+          });
+          return messages.length;
+        } catch (e) {
+          console.log(e);
+          return 'Error';
+        }
+      }
+    } catch (e) {
+      console.log(e);
+      return 'Error';
+    }
+  }
+
+  public async readMessages(userId: number, conversationId: number) {
+    try {
+      await this.prisma.conversationsUsers.updateMany({
+        where: {
+          userId: userId,
+          conversationId: conversationId,
+        },
+        data: {
+          readTime: new Date(),
+        },
+      });
+      return 'Messages read';
     } catch (e) {
       console.log(e);
       return 'Error';

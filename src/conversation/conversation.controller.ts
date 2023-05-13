@@ -89,6 +89,24 @@ export class ConversationController {
     return this.conversationService.getNumberOfInvitations(user.userId);
   }
 
+  @Get('numberOfUnreadMessages/:conversationId')
+  async getNumberOfUnreadMessages(
+    @GetUser() user: JwtAuthDto,
+    @Param('conversationId') conversationId: string,
+  ) {
+    return this.conversationService.getNumberOfUnreadMessages(
+      user.userId,
+      +conversationId,
+    );
+  }
+  @Get('read/:conversationId')
+  async readMessages(
+    @GetUser() user: JwtAuthDto,
+    @Param('conversationId') conversationId: string,
+  ) {
+    return this.conversationService.readMessages(user.userId, +conversationId);
+  }
+
   @Delete('invitations/:conversationId/decline')
   async declineInvitation(
     @GetUser() user: JwtAuthDto,
