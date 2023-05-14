@@ -27,7 +27,11 @@ export class ChatGateway implements OnGatewayInit {
     client.join(room);
     client.emit('enteredConversation', room);
   }
-
+  @SubscribeMessage('leaveConversation')
+  handleRoomLeave(client: Socket, room: string) {
+    client.leave(room);
+    client.emit('leftConversation', room);
+  }
   handleMessage(payload: { conversationId: number; message: any }): void {
     const { conversationId, message } = payload;
     const roomId = conversationId.toString();
