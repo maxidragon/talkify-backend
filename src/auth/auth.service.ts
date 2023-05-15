@@ -117,4 +117,27 @@ export class AuthService {
     });
     return 'User verified';
   }
+  async changePassword(
+    userId: number,
+    oldPassword: string,
+    newPassword: string,
+  ) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        id: userId,
+      },
+    });
+    if (sha512(user.password) !== sha512(oldPassword)) {
+      return 'Wrong password';
+    }
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        password: sha512(newPassword),
+      },
+    });
+    return 'Password changed';
+  }
 }

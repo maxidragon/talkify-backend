@@ -1,6 +1,9 @@
-import { Controller, Get, Post, Query, Res } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
+import { GetUser } from './decorator/getUser.decorator';
+import { JwtAuthDto } from './dto/jwt-auth.dto';
+import { ChangePasswordDto } from './dto/changePassword.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -16,5 +19,20 @@ export class AuthController {
     res.clearCookie('jwt');
     res.clearCookie('user_info');
     res.send({ statusCode: true, message: 'Logout success' });
+  }
+  @Get('verify/:tempId')
+  async verify(@Param('tempId') tempId: string) {
+    await this.authService.verifyUser(tempId);
+  }
+  @Post('changePassword')
+  async changePassword(
+    @GetUser() user: JwtAuthDto,
+    @Body() dto: ChangePasswordDto,
+  ) {
+    await this.authService.changePassword(
+      user.userId,
+      dto.oldPassword,
+      dto.newPassword,
+    );
   }
 }
