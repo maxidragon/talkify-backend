@@ -17,6 +17,8 @@ model User {
   conversations        Conversation[]       @relation("usersInConversations")
   addedToConversations ConversationsUsers[] @relation("addedBy")
   conversationsUsers   ConversationsUsers[] @relation("usersInConversations")
+  tempId               String?
+  isVerified           Boolean              @default(false)
 }
 
 model Conversation {

@@ -5,11 +5,13 @@ import { JwtAuthDto } from './dto/jwt-auth.dto';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
 import { sha512 } from 'js-sha512';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: DbService,
+    private readonly mailerService: MailerService,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -32,8 +34,28 @@ export class AuthService {
         username: dto.username,
       },
     });
-    //TODO
-    //send verification email
+    const tempId = await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        tempId: sha512(user.id.toString()),
+      },
+    });
+    const emailHTML = `
+      <html lang="en">
+        <body>
+          <h1>Welcome to talkify!</h1>
+          <p>Click <a href="http://localhost:3000/auth/verify/${tempId.tempId}">here</a> to confirm your account.</p>
+        </body>
+      </html>
+    `;
+    await this.mailerService.sendMail({
+      to: dto.email,
+      from: process.env.MAIL_FROM,
+      subject: 'Confirm your email',
+      html: emailHTML,
+    });
     return { msg: 'Successfully registered a new account!' };
   }
 
@@ -72,5 +94,24 @@ export class AuthService {
         Theme: true,
       },
     });
+  }
+  async verifyUser(tempId: string): Promise<string> {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        tempId: tempId,
+      },
+    });
+    if (!user) {
+      return 'User not found';
+    }
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        isVerified: true,
+      },
+    });
+    return 'User verified';
   }
 }
