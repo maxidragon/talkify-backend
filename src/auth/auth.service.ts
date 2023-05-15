@@ -64,6 +64,9 @@ export class AuthService {
       where: { email: dto.email },
     });
 
+    if (user.isVerified === false) {
+      throw new ForbiddenException('User is not verified!');
+    }
     if (sha512(dto.password) === user.password) {
       return this.generateAuthCookie({ userId: user.id });
     }
