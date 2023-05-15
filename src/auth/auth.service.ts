@@ -127,7 +127,7 @@ export class AuthService {
         id: userId,
       },
     });
-    if (sha512(user.password) !== sha512(oldPassword)) {
+    if (sha512(oldPassword) !== user.password) {
       return 'Wrong password';
     }
     await this.prisma.user.update({

@@ -155,9 +155,7 @@ export class ConversationService {
         return conversation;
       });
 
-      const conversationsWithUnreadMessages = await Promise.all(promises);
-      console.log(conversationsWithUnreadMessages);
-      return conversationsWithUnreadMessages;
+      return await Promise.all(promises);
     } catch (e) {
       console.log(e);
       return 'Error';

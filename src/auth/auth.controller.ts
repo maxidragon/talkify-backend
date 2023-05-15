@@ -1,9 +1,19 @@
-import { Body, Controller, Get, Param, Post, Query, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
 import { GetUser } from './decorator/getUser.decorator';
 import { JwtAuthDto } from './dto/jwt-auth.dto';
 import { ChangePasswordDto } from './dto/changePassword.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
@@ -24,10 +34,11 @@ export class AuthController {
   async verify(@Param('tempId') tempId: string) {
     await this.authService.verifyUser(tempId);
   }
+  @UseGuards(AuthGuard('jwt'))
   @Post('changePassword')
   async changePassword(
-    @GetUser() user: JwtAuthDto,
     @Body() dto: ChangePasswordDto,
+    @GetUser() user: JwtAuthDto,
   ) {
     await this.authService.changePassword(
       user.userId,
