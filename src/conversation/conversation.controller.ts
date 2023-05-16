@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -14,6 +15,7 @@ import { ConversationService } from './conversation.service';
 import { AuthGuard } from '@nestjs/passport';
 import { AddUserDto } from './dto/addUser.dto';
 import { CreateConversationDto } from './dto/createConversation.dto';
+import { UpdateConversationNameDto } from './dto/updateConversationName.dto';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('conversation')
@@ -99,6 +101,7 @@ export class ConversationController {
       +conversationId,
     );
   }
+
   @Get('read/:conversationId')
   async readMessages(
     @GetUser() user: JwtAuthDto,
@@ -131,6 +134,7 @@ export class ConversationController {
     );
     return { statusCode: 204 };
   }
+
   @Delete('remove')
   async removeUserFromConversation(
     @GetUser() user: JwtAuthDto,
@@ -152,6 +156,7 @@ export class ConversationController {
     await this.conversationService.createConversation(user.userId, body.name);
     return { statusCode: 201 };
   }
+
   @Post('admin')
   async addAdmin(
     @Body() body: AddUserDto,
@@ -164,6 +169,7 @@ export class ConversationController {
     );
     return { statusCode: 201 };
   }
+
   @Delete('admin')
   async removeAdmin(
     @GetUser() user: JwtAuthDto,
@@ -175,6 +181,20 @@ export class ConversationController {
       parseInt(conversationId),
       user.userId,
     );
+  }
+
+  @Put('updateName/:conversationId')
+  async updateConversationName(
+    @Body() body: UpdateConversationNameDto,
+    @GetUser() user: JwtAuthDto,
+    @Param('conversationId') conversationId: string,
+  ) {
+    await this.conversationService.updateConversationName(
+      user.userId,
+      parseInt(conversationId),
+      body.name,
+    );
+    return { statusCode: 204 };
   }
 
   convertBigIntToString(obj: any): any {

@@ -249,6 +249,8 @@ export class ConversationService {
           isAccepted: true,
           acceptedTime: new Date(),
           addedById: createdBy,
+          readTime: new Date(),
+          isAdmin: true,
         },
       });
       return conversation;
@@ -383,7 +385,29 @@ export class ConversationService {
       return 'Error';
     }
   }
-
+  public async updateConversationName(
+    userId: number,
+    conversationId: number,
+    name: string,
+  ) {
+    try {
+      if (!(await this.isAdmin(userId, conversationId))) {
+        return 'You are not admin';
+      }
+      await this.prisma.conversation.update({
+        where: {
+          id: conversationId,
+        },
+        data: {
+          name: name,
+        },
+      });
+      return 'Conversation name updated';
+    } catch (e) {
+      console.log(e);
+      return 'Error';
+    }
+  }
   private async isAdmin(userId: number, conversationId: number) {
     const user = await this.prisma.conversationsUsers.findMany({
       where: {
