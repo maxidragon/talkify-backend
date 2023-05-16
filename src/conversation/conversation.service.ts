@@ -266,7 +266,10 @@ export class ConversationService {
     deletedBy: number,
   ): Promise<any> {
     try {
-      if (!(await this.isAdmin(deletedBy, conversationId))) {
+      if (
+        userId != deletedBy &&
+        !(await this.isAdmin(deletedBy, conversationId))
+      ) {
         return 'You are not admin';
       }
       await this.prisma.conversationsUsers.deleteMany({
