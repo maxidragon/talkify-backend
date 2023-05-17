@@ -63,6 +63,9 @@ export class ConversationService {
           userId: body.userId,
           conversationId: body.conversationId,
           addedById: addedBy,
+          isAdmin: false,
+          isAccepted: false,
+          readTime: new Date(),
         },
       });
 
@@ -171,6 +174,25 @@ export class ConversationService {
         where: { conversationId, userId },
         data: { isAccepted: true, acceptedTime: new Date() },
       });
+      const conversationUser = await this.prisma.conversationsUsers.findMany({
+        where: { conversationId, userId },
+        select: {
+          addedBy: {
+            select: {
+              username: true,
+            },
+          },
+          user: {
+            select: {
+              username: true,
+            },
+          },
+        },
+      });
+      await this.sendSystemMessage(
+        `${conversationUser[0].addedBy.username} added ${conversationUser[0].user.username} to the conversation`,
+        conversationId,
+      );
       return 'Invitation accepted';
     } catch (e) {
       console.log(e);
@@ -278,6 +300,10 @@ export class ConversationService {
           conversationId: conversationId,
         },
       });
+      await this.sendSystemMessage(
+        `${await this.getUsername(userId)} was removed from this conversation`,
+        conversationId,
+      );
       return 'User removed';
     } catch (e) {
       console.log(e);
@@ -303,6 +329,12 @@ export class ConversationService {
           isAdmin: true,
         },
       });
+      await this.sendSystemMessage(
+        `${await this.getUsername(
+          userId,
+        )} is now an admin of this conversation`,
+        conversationId,
+      );
       return 'Admin added';
     } catch (e) {
       console.log(e);
@@ -328,6 +360,12 @@ export class ConversationService {
           isAdmin: false,
         },
       });
+      await this.sendSystemMessage(
+        `${await this.getUsername(deletedBy)} removed ${await this.getUsername(
+          userId,
+        )} as an admin of this conversation`,
+        conversationId,
+      );
       return 'Admin removed';
     } catch (e) {
       console.log(e);
@@ -388,6 +426,7 @@ export class ConversationService {
       return 'Error';
     }
   }
+
   public async updateConversationName(
     userId: number,
     conversationId: number,
@@ -405,12 +444,41 @@ export class ConversationService {
           name: name,
         },
       });
+      await this.sendSystemMessage(
+        `${await this.getUsername(
+          userId,
+        )} changed conversation name to ${name}`,
+        conversationId,
+      );
       return 'Conversation name updated';
     } catch (e) {
       console.log(e);
       return 'Error';
     }
   }
+
+  private async sendSystemMessage(message: string, conversationId: number) {
+    return this.prisma.message.create({
+      data: {
+        content: message,
+        senderId: 0,
+        conversationId: conversationId,
+      },
+    });
+  }
+
+  private async getUsername(userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        username: true,
+      },
+    });
+    return user.username;
+  }
+
   private async isAdmin(userId: number, conversationId: number) {
     const user = await this.prisma.conversationsUsers.findMany({
       where: {

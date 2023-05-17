@@ -70,6 +70,7 @@ export class MessageService {
       });
     }
   }
+
   public async isInConversation(
     userId: number,
     conversationId: number,
