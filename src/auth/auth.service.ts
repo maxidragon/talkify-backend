@@ -98,6 +98,7 @@ export class AuthService {
       },
     });
   }
+
   async verifyUser(tempId: string): Promise<string> {
     const user = await this.prisma.user.findFirst({
       where: {
@@ -117,6 +118,7 @@ export class AuthService {
     });
     return 'User verified';
   }
+
   async changePassword(
     userId: number,
     oldPassword: string,
@@ -139,5 +141,51 @@ export class AuthService {
       },
     });
     return 'Password changed';
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+    if (!user) {
+      return 'User not found';
+    }
+    const emailHTML = `
+      <html lang="en">
+        <body>
+          <h1>Reset your password</h1>
+          <p>Click <a href="http://localhost:3000/auth/password/reset/${user.tempId}">here</a> to reset your password.</p>
+        </body>
+      </html>
+    `;
+    await this.mailerService.sendMail({
+      to: email,
+      from: process.env.MAIL_FROM,
+      subject: 'Reset your password',
+      html: emailHTML,
+    });
+  }
+
+  async resetPassword(tempId: string, newPassword: string) {
+    try {
+      const user = await this.prisma.user.findFirst({
+        where: {
+          tempId: tempId,
+        },
+      });
+      await this.prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          password: sha512(newPassword),
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      return 'Error';
+    }
   }
 }
